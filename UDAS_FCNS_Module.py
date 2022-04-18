@@ -6,6 +6,12 @@ import serial
 from datetime import datetime
 import time
 import csv
+import board
+import busio
+import adafruit_gps
+import io
+import pynmea2
+
 
 
 # Fucnction to retrieve the TSG sensor Data
@@ -129,7 +135,6 @@ def getSUNA(suna,nsample):
 # Transmissometer sensor provides data for beam attenuation
 def get_Transmissometer(TM_Sensor):
     '''Obtain transmisometer data from transmissometer sensor.
-
         Inputs:
             TMSensor - a serial object
         
@@ -158,7 +163,6 @@ def get_chla(chla_sensor):
         RETURNS:
         Chl_a (chlorophyll a)
         turb (Turbidity)
-
     '''
     try:
         data = chla_sensor.readline().decode()
@@ -172,3 +176,35 @@ def get_chla(chla_sensor):
         chl_a = 'nan'
         turb = 'nan'
         return chl_a,turb
+    
+#=================================================================
+# GPS
+def get_gps(sio):
+
+    timestamp = time.monotonic()
+    try:
+        line = sio.readline()
+        msg= pynmea2.parse(line)
+        lat = msg.lat
+        lon = msg.lon
+        return repr(msg.lat), repr(msg.lon)
+    except serial.SerialException as e:
+        lat = 'nan'
+        lon = 'nan'
+        #error = str('Device error: {}'.format(e))
+        return lat,lon
+    except pynmea2.ParseError as e:
+        lat = 'nan'
+        lon = 'nan'
+        #rror = str('Parse error: {}'.format(e))
+        return lat,lon
+    except AttributeError as e:
+        lat = 'nan'
+        lon = 'nan'
+        #error = str('Attribute error: {}'.format(e))
+        return lat,lon
+    except:
+        lat = 'nan'
+        lon = 'nan'
+        return lat,lon
+    
